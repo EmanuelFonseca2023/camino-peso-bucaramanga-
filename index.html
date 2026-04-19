@@ -31,9 +31,10 @@
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* Ocultar scrollbar en la navegación móvil pero permitir scroll */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .nav-button-active { background-color: #1e3a8a; color: white; border-color: #1e3a8a; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .nav-button-inactive { background-color: white; color: #475569; border-color: #e2e8f0; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased relative pb-20">
@@ -43,16 +44,15 @@
             <h1 class="text-3xl md:text-5xl font-bold mb-3 tracking-tight">El Camino de tu Peso</h1>
             <h2 class="text-xl md:text-2xl font-light text-blue-200">Alfabetización Presupuestal de Bucaramanga</h2>
             <p class="mt-4 text-sm md:text-base text-blue-100 max-w-2xl mx-auto leading-relaxed">
-                Un viaje interactivo basado en datos abiertos. Selecciona un período temporal para entender cómo evoluciona la salud financiera de nuestra ciudad.
+                Un viaje interactivo basado en datos abiertos históricos. Selecciona un semestre para entender cómo evoluciona la salud financiera de nuestra ciudad desde 2017.
             </p>
         </div>
     </header>
 
-    <div class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm py-3 px-4 mb-8">
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-            <span class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Viaje en el tiempo:</span>
-            
-            <div class="flex overflow-x-auto w-full md:w-auto no-scrollbar space-x-2 pb-1 md:pb-0" id="time-selector">
+    <div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm py-3 px-4 mb-8">
+        <div class="max-w-6xl mx-auto flex flex-col items-start gap-3">
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Línea de Tiempo (2017 - 2025):</span>
+            <div class="flex overflow-x-auto w-full no-scrollbar space-x-2 pb-2" id="time-selector">
                 </div>
         </div>
     </div>
@@ -66,8 +66,9 @@
 
         <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-slate-100 fade-in">
             <h3 class="text-xl font-semibold text-institucional-navy mb-6">1. ¿De dónde viene la plata en este semestre?</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                <div class="relative h-64 w-full flex justify-center">
+            
+            <div id="ingresos-container" class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div class="relative h-64 w-full flex justify-center" id="canvas-container-ingresos">
                     <canvas id="ingresosChart"></canvas>
                 </div>
                 <div class="bg-slate-50 rounded-xl p-6 border-l-4 border-institucional-emerald">
@@ -76,15 +77,20 @@
                         Nota del Ciudadano
                     </h4>
                     <p class="text-sm text-slate-600 mb-3">
-                        Observa cómo cambia la porción gris (Transferencias de la Nación). Si esta porción crece mucho respecto a los impuestos locales, la ciudad pierde autonomía frente a Bogotá.
+                        Los porcentajes representan la dependencia frente a cada fuente. Observa cómo cambia la porción de "Transferencias Nación" a lo largo de los semestres. Alta dependencia significa menor autonomía local.
                     </p>
                 </div>
+            </div>
+            
+            <div id="ingresos-vacio" class="hidden text-center py-10 bg-slate-50 rounded-xl border border-slate-200">
+                <p class="text-slate-500 font-medium">Los datos de ingresos para este periodo no están categorizados bajo el estándar macro actual.</p>
             </div>
         </section>
 
         <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-slate-100 fade-in">
             <h3 class="text-xl font-semibold text-institucional-navy mb-6">2. ¿En qué invertimos para funcionar?</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            
+            <div id="gastos-container" class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                 <div class="h-64 w-full">
                     <canvas id="gastosChart"></canvas>
                 </div>
@@ -98,152 +104,126 @@
                     <div id="glosarioCaja" class="hidden bg-blue-50 p-4 rounded-xl border border-blue-100 text-sm text-slate-700 min-h-[90px]"></div>
                 </div>
             </div>
+
+            <div id="gastos-vacio" class="hidden text-center py-10 bg-slate-50 rounded-xl border border-slate-200">
+                <p class="text-slate-500 font-medium">Los datos de gastos para este periodo no están categorizados bajo el estándar macro actual.</p>
+            </div>
         </section>
 
         <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-slate-100 fade-in">
             <h3 class="text-xl font-semibold text-institucional-navy mb-4">3. Inversión en Proceso</h3>
-            <p class="text-sm text-slate-600 mb-6">Proyectos clave con avance administrativo lento en este período. El dinero está asignado, pero el flujo hacia la calle tiene retos operativos.</p>
+            <p class="text-sm text-slate-600 mb-6">Proyectos con mayor reto de ejecución real en este período. El presupuesto está asegurado, pero existen cuellos de botella administrativos.</p>
             
-            <div id="obras-container" class="space-y-6">
-                </div>
+            <div id="obras-container" class="space-y-6"></div>
         </section>
 
         <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-slate-100 fade-in">
             <h3 class="text-xl font-semibold text-institucional-navy mb-4">4. Cuentas por Pagar a Proveedores</h3>
-            <p class="text-sm text-slate-600 mb-6">Saldos facturados y pendientes de pago al cierre de este semestre. Bajar estos números es vital para el bienestar de contratistas y educadores.</p>
+            <p class="text-sm text-slate-600 mb-6">Servicios con mayores obligaciones facturadas pendientes de pago real al finalizar este semestre.</p>
 
-            <div id="deuda-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                </div>
+            <div id="deuda-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
         </section>
-
     </main>
 
     <script>
-        // Esta es la estructura que reemplaza a los CSVs para la web. 
-        // Agrupé los datos por "Periodo" basándome en tu información.
         const baseDeDatos = {
-            "2023-06": {
-                label: "Año 2023 - Primer Semestre",
-                ingresos: [39.79, 36.80, 24.47], // No Tributarios, Tributarios, Transferencias
-                gastos: [65.0, 28.0, 7.0],       // Inversión, Funcionamiento, Deuda
-                obras: [
-                    { nombre: "Servicio de Alumbrado Público 226", ppto: "76.958", avance: 1.66 },
-                    { nombre: "Obras Reducción Riesgo Desastres 201", ppto: "65.406", avance: 13.73 },
-                    { nombre: "Espacio Público Adecuado 201", ppto: "80.069", avance: 14.90 }
-                ],
-                deuda: [
-                    { nombre: "Servicio Educativo 205", monto: "15.181" },
-                    { nombre: "Dotación Hospitalaria 274", monto: "4.822" }
-                ]
-            },
-            "2023-12": {
-                label: "Año 2023 - Segundo Semestre",
-                ingresos: [35.50, 38.20, 26.30],
-                gastos: [68.0, 25.0, 7.0],
-                obras: [
-                    { nombre: "Prevención Movimientos Masa 800", ppto: "61.383", avance: 0.0 },
-                    { nombre: "Vía Urbana Construida 530", ppto: "45.979", avance: 0.0 },
-                    { nombre: "Salud Régimen Subsidiado 274", ppto: "58.807", avance: 7.86 }
-                ],
-                deuda: [
-                    { nombre: "Servicio Educativo 201", monto: "3.274" },
-                    { nombre: "Espacio Público Adecuado 201", monto: "2.891" }
-                ]
-            },
-            "2024-06": {
-                label: "Año 2024 - Primer Semestre",
-                ingresos: [38.91, 37.37, 22.78],
-                gastos: [71.23, 18.46, 4.92],
-                obras: [
-                    { nombre: "Estaciones Bomberos Construidas 503", ppto: "7.893", avance: 0.0 },
-                    { nombre: "Servicio Asistencia Técnica 201", ppto: "13.765", avance: 12.1 },
-                    { nombre: "Espacio Público Adecuado 389", ppto: "11.172", avance: 4.72 }
-                ],
-                deuda: [
-                    { nombre: "Aporte Sobretasa Bomberil", monto: "2.242" },
-                    { nombre: "Atención Seguridad Policía 201", monto: "1.102" }
-                ]
-            },
-            "2024-12": {
-                label: "Año 2024 - Segundo Semestre",
-                ingresos: [42.10, 39.50, 18.40],
-                gastos: [78.07, 18.46, 3.47],
-                obras: [
-                    { nombre: "Adecuación Hidráulica 501", ppto: "29.997", avance: 9.3 },
-                    { nombre: "Servicio Promoción Salud 275", ppto: "11.973", avance: 0.0 },
-                    { nombre: "Vía Terciaria Mantenimiento 213", ppto: "0.516", avance: 69.7 }
-                ],
-                deuda: [
-                    { nombre: "A Entidades del Gobierno", monto: "2.256" },
-                    { nombre: "Servicio Asistencia Técnica 201", monto: "0.176" }
-                ]
-            }
+            "2017-2": { "label": "Año 2017 - Semestre 2", "ingresos": [0,0,0], "gastos": [78.81, 15.47, 5.73], "obras": [], "deuda": [{ "nombre": "LEY 715 AGUA POTABLE Y SANEAMIENTO BASICO", "monto": "3.003" }, { "nombre": "SGP LEY 715 AGUA POTABLE Y SANEAMIENTO", "monto": "964" }] },
+            "2018-1": { "label": "Año 2018 - Semestre 1", "ingresos": [0,0,0], "gastos": [78.75, 16.38, 4.87], "obras": [], "deuda": [] },
+            "2018-2": { "label": "Año 2018 - Semestre 2", "ingresos": [0,0,0], "gastos": [80.58, 14.18, 5.24], "obras": [], "deuda": [{ "nombre": "PROGRAMAS RECREATIVOS CULTURALES Y DEPORTIVOS", "monto": "30" }] },
+            "2019-1": { "label": "Año 2019 - Semestre 1", "ingresos": [0,0,0], "gastos": [0,0,0], "obras": [], "deuda": [{ "nombre": "SGP PRESTACION DE SERVICIOS EDUCACION", "monto": "1.342" }, { "nombre": "INVERSION FORZOSA LEY 715 AGUA POTABLE", "monto": "571" }] },
+            "2019-2": { "label": "Año 2019 - Semestre 2", "ingresos": [0,0,0], "gastos": [0,0,0], "obras": [], "deuda": [{ "nombre": "IMPUESTO DE TRANSPORTE OLEODUCTOS", "monto": "67" }, { "nombre": "SGP INVERSION FORZOSA PROPOSITO GENERAL", "monto": "25" }] },
+            "2020-1": { "label": "Año 2020 - Semestre 1", "ingresos": [0,0,0], "gastos": [0,0,0], "obras": [], "deuda": [{ "nombre": "CONVENIO INTERADMINISTRATIVO 000231", "monto": "553" }, { "nombre": "COMPENSATORIO DEBERES URBANISTICOS", "monto": "20" }] },
+            "2020-2": { "label": "Año 2020 - Semestre 2", "ingresos": [0,0,0], "gastos": [0,0,0], "obras": [], "deuda": [{ "nombre": "LEY 715 LIBRE INVERSION PROPOSITOS GENERALES", "monto": "372" }, { "nombre": "RECURSOS PROPIOS FONDO GESTION DEL RIESGO", "monto": "336" }] },
+            "2021-1": { "label": "Año 2021 - Semestre 1", "ingresos": [0,0,0], "gastos": [70.59, 24.49, 4.92], "obras": [{ "nombre": "RECURSOS DEL CREDITO 273", "ppto": "90.741", "avance": 0.0 }, { "nombre": "RECURSOS DE CREDITO 273", "ppto": "41.259", "avance": 0.0 }, { "nombre": "IMPUESTO DE ALUMBRADO PUBLICO 526", "ppto": "29.948", "avance": 0.0 }], "deuda": [{ "nombre": "FONPET VIGENCIA EXPIRADA", "monto": "125" }, { "nombre": "CONTRIBUCION 5% CONTRATOS DE OBRA", "monto": "50" }] },
+            "2021-2": { "label": "Año 2021 - Semestre 2", "ingresos": [0,0,0], "gastos": [78.07, 18.46, 3.47], "obras": [{ "nombre": "CONTRIBUCION 5% CONTRATOS OBRA", "ppto": "6.515", "avance": 0.0 }, { "nombre": "CONTRIBUCIÓN DE VALORIZACIÓN 530", "ppto": "3.209", "avance": 0.0 }, { "nombre": "CONTRIBUCION 5% CONTRATOS OBRA", "ppto": "2.428", "avance": 0.0 }], "deuda": [{ "nombre": "CONTRIBUCION 5% OBRA PUBLICA", "monto": "434" }, { "nombre": "CONTRIBUCION 5% OBRA PUBLICA", "monto": "417" }] },
+            "2022-1": { "label": "Año 2022 - Semestre 1", "ingresos": [33.8, 34.78, 32.07], "gastos": [71.23, 25.69, 3.08], "obras": [{ "nombre": "FORTALECIMIENTO GESTION TERRITORIAL 526", "ppto": "26.480", "avance": 0.0 }, { "nombre": "HOSPITALES PRIMER NIVEL 274", "ppto": "19.689", "avance": 0.0 }, { "nombre": "PREVENCION Y CONTROL DE MOVIMIENTOS EN MASA 501", "ppto": "15.226", "avance": 0.0 }], "deuda": [{ "nombre": "SERVICIO EDUCATIVO 201", "monto": "842" }, { "nombre": "SERVICIO EDUCATIVO 206 CALIDAD", "monto": "253" }] },
+            "2022-2": { "label": "Año 2022 - Semestre 2", "ingresos": [39.95, 36.39, 37.46], "gastos": [0, 86.31, 13.69], "obras": [{ "nombre": "HOSPITALES PRIMER NIVEL 274", "ppto": "14.098", "avance": 0.0 }, { "nombre": "ESPACIO PUBLICO ADECUADO 501", "ppto": "13.188", "avance": 0.0 }, { "nombre": "PLAZA DE MERCADO ADECUADAS 573", "ppto": "11.560", "avance": 0.0 }], "deuda": [{ "nombre": "APOYO DOTACION HOSPITALARIA 274", "monto": "4.822" }, { "nombre": "MANTENIMIENTO VIA TERCIARIA 273", "monto": "2.230" }] },
+            "2023-1": { "label": "Año 2023 - Semestre 1", "ingresos": [33.02, 39.2, 30.79], "gastos": [72.22, 22.86, 4.92], "obras": [{ "nombre": "INFRAESTRUCTURA EDUCATIVA MEJORADA", "ppto": "79.669", "avance": 0.0 }, { "nombre": "PREVENCION DE MOVIMIENTOS EN MASA", "ppto": "61.384", "avance": 0.0 }, { "nombre": "ESPACIO PUBLICO ADECUADO", "ppto": "34.546", "avance": 0.0 }], "deuda": [{ "nombre": "ALIMENTACION ESCOLAR (PAE)", "monto": "678" }, { "nombre": "ADQUISICIONES DE ACTIVOS MENORES", "monto": "239" }] },
+            "2023-2": { "label": "Año 2023 - Semestre 2", "ingresos": [39.79, 36.8, 37.12], "gastos": [0, 76.6, 23.4], "obras": [{ "nombre": "HOSPITALES PRIMER NIVEL CONSTRUIDOS", "ppto": "23.794", "avance": 0.0 }, { "nombre": "VIA URBANA CONSTRUIDA", "ppto": "7.688", "avance": 0.0 }, { "nombre": "NOMINA DOCENTE CSF", "ppto": "7.537", "avance": 0.0 }], "deuda": [{ "nombre": "EDUCACION NOMINA CSF", "monto": "7.537" }, { "nombre": "PROMOCION DERECHOS INFANCIA", "monto": "3.360" }] },
+            "2024-1": { "label": "Año 2024 - Semestre 1", "ingresos": [36.95, 38.12, 34.85], "gastos": [0, 74.1, 25.9], "obras": [{ "nombre": "SERVICIO DE ALUMBRADO PÚBLICO", "ppto": "48.036", "avance": 0.0 }, { "nombre": "REDUCCION RIESGO DESASTRES", "ppto": "47.549", "avance": 0.0 }, { "nombre": "SERVICIO ALUMBRADO PUBLICO", "ppto": "28.519", "avance": 0.0 }], "deuda": [{ "nombre": "SERVICIO EDUCATIVO", "monto": "1.120" }, { "nombre": "ADQUISICIONES DIFERENTES DE ACTIVOS", "monto": "554" }] },
+            "2024-2": { "label": "Año 2024 - Semestre 2", "ingresos": [45.31, 36.63, 42.22], "gastos": [0, 74.23, 25.77], "obras": [{ "nombre": "SERVICIO DE ALUMBRADO PUBLICO", "ppto": "15.101", "avance": 0.0 }, { "nombre": "VIA URBANA CONSTRUIDA", "ppto": "13.615", "avance": 0.0 }, { "nombre": "ESPACIO PUBLICO ADECUADO", "ppto": "12.891", "avance": 0.0 }], "deuda": [{ "nombre": "SERVICIO EDUCATIVO 205", "monto": "13.498" }, { "nombre": "TRANSPORTE DE PACIENTES", "monto": "795" }] },
+            "2025-1": { "label": "Año 2025 - Semestre 1", "ingresos": [37.57, 40.13, 35.49], "gastos": [0, 77.47, 22.53], "obras": [{ "nombre": "OBRAS DE INGENIERIA CIVIL", "ppto": "35.636", "avance": 0.0 }, { "nombre": "ALUMBRADO PUBLICO", "ppto": "34.816", "avance": 0.0 }, { "nombre": "MANTENIMIENTO CARRETERAS", "ppto": "22.910", "avance": 0.0 }], "deuda": [{ "nombre": "A ENTIDADES DEL GOBIERNO", "monto": "2.256" }, { "nombre": "APORTES A ESTABLECIMIENTOS PUBLICOS", "monto": "2.243" }] }
         };
 
-        // --- LÓGICA DE INTERACTIVIDAD ---
         let ingresosChartInstance = null;
         let gastosChartInstance = null;
-        let periodoActual = "2024-12"; // Período por defecto al cargar
+        
+        // Iniciamos en el periodo más reciente por defecto
+        let periodoActual = "2024-2"; 
 
-        // 1. Inicializar la interfaz
         function initApp() {
             crearBotonesNavegacion();
             cargarDatosSemestre(periodoActual);
+            
+            // Hacer scroll horizontal hasta el final para ver los años recientes
+            const selector = document.getElementById('time-selector');
+            selector.scrollLeft = selector.scrollWidth;
         }
 
-        // 2. Crear botones de navegación dinámicamente
         function crearBotonesNavegacion() {
             const selector = document.getElementById('time-selector');
             Object.keys(baseDeDatos).forEach(periodo => {
                 const btn = document.createElement('button');
                 btn.id = `btn-${periodo}`;
-                // Estilo base
-                btn.className = "flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border bg-white text-slate-600 border-slate-200 hover:border-institucional-navy hover:text-institucional-navy";
+                btn.className = "flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors border nav-button-inactive";
                 btn.innerText = periodo;
                 btn.onclick = () => cargarDatosSemestre(periodo);
                 selector.appendChild(btn);
             });
         }
 
-        // 3. Función principal para cambiar de semestre
         function cargarDatosSemestre(periodo) {
             periodoActual = periodo;
             const datos = baseDeDatos[periodo];
 
-            // Actualizar UI del indicador de tiempo
             document.getElementById('current-period-text').innerText = datos.label;
             
-            // Actualizar estilos de los botones
+            // Update button styles
             Object.keys(baseDeDatos).forEach(p => {
                 const b = document.getElementById(`btn-${p}`);
                 if (p === periodo) {
-                    b.classList.add('bg-institucional-navy', 'text-white', 'border-institucional-navy', 'shadow-md');
-                    b.classList.remove('bg-white', 'text-slate-600', 'border-slate-200');
+                    b.classList.add('nav-button-active');
+                    b.classList.remove('nav-button-inactive');
                 } else {
-                    b.classList.remove('bg-institucional-navy', 'text-white', 'border-institucional-navy', 'shadow-md');
-                    b.classList.add('bg-white', 'text-slate-600', 'border-slate-200');
+                    b.classList.remove('nav-button-active');
+                    b.classList.add('nav-button-inactive');
                 }
             });
 
-            // Actualizar Gráficos
-            renderIngresosChart(datos.ingresos);
-            renderGastosChart(datos.gastos);
+            // Manejo de Datos Faltantes (0,0,0) para periodos viejos
+            const tieneIngresos = datos.ingresos.reduce((a,b) => a+b, 0) > 0;
+            const tieneGastos = datos.gastos.reduce((a,b) => a+b, 0) > 0;
 
-            // Actualizar DOM Obras y Deudas
+            if (tieneIngresos) {
+                document.getElementById('ingresos-container').classList.remove('hidden');
+                document.getElementById('ingresos-vacio').classList.add('hidden');
+                renderIngresosChart(datos.ingresos);
+            } else {
+                document.getElementById('ingresos-container').classList.add('hidden');
+                document.getElementById('ingresos-vacio').classList.remove('hidden');
+            }
+
+            if (tieneGastos) {
+                document.getElementById('gastos-container').classList.remove('hidden');
+                document.getElementById('gastos-vacio').classList.add('hidden');
+                renderGastosChart(datos.gastos);
+            } else {
+                document.getElementById('gastos-container').classList.add('hidden');
+                document.getElementById('gastos-vacio').classList.remove('hidden');
+            }
+
             renderObras(datos.obras);
             renderDeuda(datos.deuda);
         }
 
-        // --- RENDERIZADORES ---
-
         function renderIngresosChart(datosIngresos) {
             const ctx = document.getElementById('ingresosChart').getContext('2d');
-            if (ingresosChartInstance) ingresosChartInstance.destroy(); // Destruir anterior para evitar solapamientos
+            if (ingresosChartInstance) ingresosChartInstance.destroy();
             
             ingresosChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['No Tributarios (Tasas/Multas)', 'Impuestos (Predial/ICA)', 'Transferencias Bogotá'],
+                    labels: ['No Tributarios', 'Impuestos', 'Transferencias Nación'],
                     datasets: [{
                         data: datosIngresos,
                         backgroundColor: ['#10b981', '#1e3a8a', '#94a3b8'],
@@ -266,7 +246,7 @@
                 data: {
                     labels: ['Inversión Social', 'Funcionamiento', 'Deuda'],
                     datasets: [{
-                        label: '% del Gasto Total',
+                        label: '% del Gasto',
                         data: datosGastos,
                         backgroundColor: ['#10b981', '#1e3a8a', '#f59e0b'],
                         borderRadius: 6
@@ -282,8 +262,13 @@
 
         function renderObras(obras) {
             const container = document.getElementById('obras-container');
-            container.innerHTML = ''; // Limpiar
+            container.innerHTML = '';
             
+            if (obras.length === 0) {
+                container.innerHTML = '<p class="text-slate-500 italic">No se reportan obras con alerta de estancamiento para este periodo.</p>';
+                return;
+            }
+
             obras.forEach(obra => {
                 const colorCls = obra.avance < 5 ? 'bg-institucional-amber' : 'bg-institucional-navy';
                 const textCls = obra.avance < 5 ? 'text-institucional-amber' : 'text-institucional-navy';
@@ -291,8 +276,8 @@
                 container.innerHTML += `
                 <div class="fade-in">
                     <div class="flex flex-col md:flex-row md:justify-between items-start md:items-end mb-1">
-                        <span class="text-sm font-semibold text-slate-700 w-full md:w-3/4">${obra.nombre} <br><span class="font-normal text-slate-500 text-xs">Presupuesto: $${obra.ppto} Millones</span></span>
-                        <span class="text-sm font-bold ${textCls} mt-2 md:mt-0">${obra.avance}% Real</span>
+                        <span class="text-sm font-semibold text-slate-700 w-full md:w-3/4 capitalize">${obra.nombre.toLowerCase()} <br><span class="font-normal text-slate-500 text-xs">Presupuesto Asignado: $${obra.ppto} Millones</span></span>
+                        <span class="text-sm font-bold ${textCls} mt-2 md:mt-0">${obra.avance}% Avance Real</span>
                     </div>
                     <div class="w-full bg-slate-200 rounded-full h-3">
                         <div class="${colorCls} h-3 rounded-full transition-all duration-1000 ease-out" style="width: ${Math.max(obra.avance, 1)}%"></div>
@@ -305,20 +290,26 @@
             const container = document.getElementById('deuda-container');
             container.innerHTML = '';
             
+            if (deudas.length === 0) {
+                container.innerHTML = '<p class="text-slate-500 italic">No se reportan deudas masivas pendientes de pago a proveedores para este periodo.</p>';
+                return;
+            }
+
             deudas.forEach(deuda => {
                 container.innerHTML += `
-                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm border-l-4 border-l-institucional-amber fade-in">
-                    <h4 class="font-bold text-slate-700 text-sm mb-2">${deuda.nombre}</h4>
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm border-l-4 border-l-institucional-amber fade-in hover:shadow-md transition-shadow">
+                    <div class="flex items-center mb-3">
+                        <h4 class="font-bold text-slate-700 text-sm capitalize">${deuda.nombre.toLowerCase()}</h4>
+                    </div>
                     <p class="text-3xl font-bold text-institucional-amber mb-1">$${deuda.monto}</p>
                     <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Millones Pendientes</p>
                 </div>`;
             });
         }
 
-        // Glosario
         const definiciones = {
-            funcionamiento: "<strong>Funcionamiento:</strong> Salarios, papelería, recibos de luz. El costo de que la alcaldía opere.",
-            inversion: "<strong>Inversión Social:</strong> Obras públicas, dotación de colegios, programas de salud.",
+            funcionamiento: "<strong>Funcionamiento:</strong> Salarios, recibos de luz, mantenimiento de sedes. Es vital para operar.",
+            inversion: "<strong>Inversión Social:</strong> Obras, dotación de colegios. <em>Si aparece en 0, indica que el registro contable macro aún no había cerrado en esa fecha de corte.</em>",
             deuda: "<strong>Pago de Deudas:</strong> Abono de capital e intereses a los bancos por préstamos pasados."
         };
 
@@ -328,7 +319,6 @@
             caja.classList.remove('hidden');
         }
 
-        // Arrancar la app cuando cargue la página
         window.onload = initApp;
 
     </script>
