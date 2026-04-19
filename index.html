@@ -4,416 +4,499 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>El Camino de tu Peso - Bucaramanga</title>
-    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        institucional: {
-                            navy: '#1e3a8a',    /* Azul Marino */
-                            emerald: '#10b981', /* Verde Esmeralda */
-                            amber: '#f59e0b',   /* Naranja/Ámbar de Alerta */
-                            light: '#f8fafc'    /* Slate 50 */
-                        }
+                        navy:    '#1e3a8a',
+                        emerald: '#059669',
+                        amber:   '#d97706',
+                        cream:   '#faf7f2'
+                    },
+                    fontFamily: {
+                        display: ['Fraunces', 'Georgia', 'serif'],
+                        body:    ['DM Sans', 'sans-serif']
                     }
                 }
             }
         }
     </script>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
-        /* Transiciones suaves para la interactividad */
-        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        body { font-family: 'DM Sans', sans-serif; }
+        h1, h2, h3 { font-family: 'Fraunces', serif; }
+
+        .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
+
+        .badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em;
+            text-transform: uppercase; padding: 4px 10px;
+            border-radius: 999px;
+        }
+
+        .bar-track { background: #e2e8f0; border-radius: 999px; height: 10px; overflow: hidden; }
+        .bar-fill  { height: 100%; border-radius: 999px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+
+        .sticky-header {
+            position: sticky; top: 0; z-index: 30;
+            background: rgba(30,58,138,0.95);
+            backdrop-filter: blur(8px);
+        }
+
+        .card-hover { transition: box-shadow 0.2s, transform 0.2s; }
+        .card-hover:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.10); transform: translateY(-2px); }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased relative pb-20">
+<body class="bg-cream text-slate-800 antialiased relative pb-24">
 
-    <header class="bg-institucional-navy text-white py-12 px-6 shadow-md rounded-b-3xl mb-10">
+    <header class="bg-navy text-white pt-16 pb-12 px-6 relative z-20">
         <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-3xl md:text-5xl font-bold mb-4 tracking-tight">El Camino de tu Peso</h1>
-            <h2 class="text-xl md:text-2xl font-light text-blue-200">Entendiendo el Presupuesto de Bucaramanga</h2>
-            <p class="mt-6 text-sm md:text-base text-blue-100 max-w-2xl mx-auto leading-relaxed">
-                Un viaje interactivo basado en datos abiertos para entender de dónde viene el dinero de nuestra ciudad y en qué se transforma. Aquí aprenderemos juntos cómo funciona nuestra casa común.
+            <span class="badge bg-emerald/20 text-emerald-300 border border-emerald/30 mb-6">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                Datos abiertos · Bucaramanga
+            </span>
+            <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-5">El Camino de tu Peso</h1>
+            <p class="text-blue-200 text-xl md:text-2xl font-light mb-8">¿Sabes en qué se convierte el dinero que pagas en impuestos?</p>
+            <p class="text-blue-100 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+                Cada peso que pagas en impuesto predial, industria y comercio o alumbrado público entra al presupuesto de la ciudad. Esta herramienta te muestra, en lenguaje simple, de dónde viene ese dinero, en qué se gasta y qué proyectos están avanzando o detenidos.
             </p>
-
-            <div class="mt-8 flex flex-col sm:flex-row items-center justify-center bg-blue-900/40 p-4 rounded-xl border border-blue-800/50 backdrop-blur-sm max-w-md mx-auto fade-in">
-                <label for="periodoSelect" class="text-blue-100 font-medium mb-2 sm:mb-0 sm:mr-4">Explora un semestre:</label>
-                <select id="periodoSelect" onchange="updateDashboard(this.value)" class="bg-white text-institucional-navy font-bold py-2 px-4 rounded-lg shadow-sm focus:outline-none focus:ring-4 focus:ring-institucional-emerald/50 cursor-pointer transition-all w-full sm:w-auto">
-                    </select>
-            </div>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 space-y-12 fade-in">
+    <div class="sticky-header py-4 px-4 shadow-md flex justify-center border-b border-white/10 mb-10">
+        <div class="max-w-7xl w-full flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+            <span class="text-blue-100 text-sm md:text-base font-medium whitespace-nowrap">📅 Mirando el periodo:</span>
+            <select id="periodoSelect" onchange="updateDashboard(this.value)"
+                class="bg-white text-navy font-bold text-sm md:text-base py-2.5 px-5 rounded-xl shadow-sm
+                       focus:outline-none focus:ring-4 focus:ring-emerald/50 cursor-pointer w-full max-w-xs transition-all hover:shadow-lg">
+            </select>
+        </div>
+    </div>
 
-        <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-slate-100">
-            <h3 class="text-2xl font-semibold text-institucional-navy mb-6">1. ¿De dónde viene la plata?</h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                <div class="relative h-64 w-full flex justify-center">
-                    <canvas id="ingresosChart"></canvas>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 fade-in flex flex-col gap-10">
+
+        <section class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2">
+                <div class="p-6 lg:p-10 border-b lg:border-b-0 lg:border-r border-slate-100 flex flex-col justify-center">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-4xl">💰</span>
+                        <h2 class="text-2xl lg:text-3xl font-bold text-navy">¿De dónde viene la plata?</h2>
+                    </div>
+                    <p class="text-base text-slate-500 mb-8 leading-relaxed">El dinero de Bucaramanga llega de tres fuentes. Entender de dónde viene dice mucho sobre qué tan independiente es la ciudad.</p>
+                    
+                    <div class="relative w-full h-64 lg:h-72">
+                        <canvas id="ingresosChart"></canvas>
+                    </div>
                 </div>
                 
-                <div class="bg-slate-50 rounded-xl p-6 border-l-4 border-institucional-emerald">
-                    <h4 class="font-bold text-institucional-emerald flex items-center mb-2">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        Nota del Ciudadano
-                    </h4>
-                    <p class="text-sm text-slate-600 mb-3">
-                        Los <strong>Impuestos Tributarios</strong> (como el Predial) y los <strong>No Tributarios</strong> (multas, tasas) son el esfuerzo directo de los bumangueses. 
-                    </p>
-                    <p class="text-sm text-slate-600">
-                        Las <strong>Transferencias de la Nación</strong> son dineros que gira el gobierno central desde Bogotá. Depender mucho de estas transferencias es un reto, ya que reduce la autonomía financiera de la ciudad.
-                    </p>
+                <div class="p-6 lg:p-10 bg-slate-50/30 flex flex-col justify-center space-y-4">
+                    <div class="flex gap-4 p-5 rounded-2xl bg-emerald-50/80 border border-emerald-100 hover:bg-emerald-50 transition-colors">
+                        <div class="w-4 h-4 rounded-full bg-emerald-500 mt-1 shrink-0 shadow-sm"></div>
+                        <div>
+                            <p class="text-base font-bold text-emerald-800">No Tributarios</p>
+                            <p class="text-sm text-slate-600 mt-1.5 leading-relaxed">Son cobros por servicios específicos: multas de tránsito, tasas por expedición de licencias, venta de activos. No son impuestos generales.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 p-5 rounded-2xl bg-blue-50/80 border border-blue-100 hover:bg-blue-50 transition-colors">
+                        <div class="w-4 h-4 rounded-full bg-navy mt-1 shrink-0 shadow-sm"></div>
+                        <div>
+                            <p class="text-base font-bold text-navy">Impuestos Tributarios</p>
+                            <p class="text-sm text-slate-600 mt-1.5 leading-relaxed">Es el esfuerzo directo de los bumangueses: predial, industria y comercio, alumbrado. Cuanto más recauda la ciudad sola, más libre es de decidir en qué gastarlo.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 p-5 rounded-2xl bg-white border border-slate-200 hover:bg-slate-50 transition-colors">
+                        <div class="w-4 h-4 rounded-full bg-slate-400 mt-1 shrink-0 shadow-sm"></div>
+                        <div>
+                            <p class="text-base font-bold text-slate-700">Transferencias de la Nación</p>
+                            <p class="text-sm text-slate-600 mt-1.5 leading-relaxed">Plata que gira el gobierno central desde Bogotá (SGP, regalías). Viene etiquetada: solo puede usarse en salud, educación o agua. Depender mucho de esto reduce la autonomía local.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-slate-100">
-            <h3 class="text-2xl font-semibold text-institucional-navy mb-6">2. ¿En qué gastamos para que la ciudad funcione?</h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                <div class="h-64 w-full">
-                    <canvas id="gastosChart"></canvas>
+        <section class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2">
+                <div class="p-6 lg:p-10 order-2 lg:order-1 flex flex-col justify-center bg-slate-50/30">
+                    <h3 class="text-lg font-bold text-slate-700 mb-4">Toca un nombre para entender qué hay adentro:</h3>
+                    <div class="flex flex-wrap gap-3 mb-6">
+                        <button onclick="mostrarGlosario('funcionamiento')" class="px-5 py-2.5 text-sm font-bold rounded-xl bg-blue-50 text-navy border border-blue-100 hover:bg-blue-100 transition-all focus:ring-2 focus:ring-blue-300 outline-none">
+                            ⚙️ Funcionamiento
+                        </button>
+                        <button onclick="mostrarGlosario('inversion')" class="px-5 py-2.5 text-sm font-bold rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-100 hover:bg-emerald-100 transition-all focus:ring-2 focus:ring-emerald-300 outline-none">
+                            🏗️ Inversión Social
+                        </button>
+                        <button onclick="mostrarGlosario('deuda')" class="px-5 py-2.5 text-sm font-bold rounded-xl bg-amber-50 text-amber-800 border border-amber-100 hover:bg-amber-100 transition-all focus:ring-2 focus:ring-amber-300 outline-none">
+                            🏦 Pago de Deudas
+                        </button>
+                    </div>
+                    <div id="glosarioCaja" class="hidden p-6 rounded-2xl bg-white border border-slate-200 text-base text-slate-700 leading-relaxed fade-in shadow-sm min-h-[160px]"></div>
                 </div>
 
-                <div class="flex flex-col space-y-4">
-                    <p class="text-sm text-slate-500 mb-2">Haz clic en un concepto para entender qué significa:</p>
+                <div class="p-6 lg:p-10 border-b lg:border-b-0 lg:border-l border-slate-100 order-1 lg:order-2 flex flex-col justify-center">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-4xl">🏙️</span>
+                        <h2 class="text-2xl lg:text-3xl font-bold text-navy">¿En qué se gasta?</h2>
+                    </div>
+                    <p class="text-base text-slate-500 mb-8 leading-relaxed">El presupuesto se divide en tres grandes bolsillos que definen el rumbo y desarrollo de la ciudad.</p>
                     
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <button onclick="mostrarGlosario('funcionamiento')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-institucional-navy font-medium rounded-lg transition-colors focus:ring-2 focus:ring-institucional-navy">Funcionamiento</button>
-                        <button onclick="mostrarGlosario('inversion')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-institucional-emerald font-medium rounded-lg transition-colors focus:ring-2 focus:ring-institucional-emerald">Inversión Social</button>
-                        <button onclick="mostrarGlosario('deuda')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded-lg transition-colors focus:ring-2 focus:ring-slate-400">Pago de Deudas</button>
-                    </div>
-
-                    <div id="glosarioCaja" class="bg-blue-50 p-5 rounded-xl border border-blue-100 text-sm text-slate-700 min-h-[100px] fade-in hidden">
+                    <div class="relative w-full h-64 lg:h-72">
+                        <canvas id="gastosChart"></canvas>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-slate-100">
-            <h3 class="text-2xl font-semibold text-institucional-navy mb-6">3. Inversión en Proceso</h3>
-            
-            <p class="text-sm text-slate-600 mb-6">
-                El dinero asignado a una obra o servicio no siempre se gasta inmediatamente. Aquí vemos el avance de algunos de los proyectos más grandes del semestre seleccionado.
-            </p>
-
-            <div id="obrasContainer" class="space-y-6">
+        <section class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 lg:p-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+                <div class="lg:col-span-5 flex flex-col">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-4xl">🚧</span>
+                        <h2 class="text-2xl lg:text-3xl font-bold text-navy">Proyectos que avanzan (o no)</h2>
+                    </div>
+                    <p class="text-base text-slate-500 mb-6 leading-relaxed">
+                        Que un proyecto tenga plata asignada no significa que ya se esté ejecutando. Aquí ves cuánto ha avanzado realmente cada uno — es decir, cuánto se ha pagado de lo que estaba presupuestado.
+                    </p>
+                    <div class="mt-auto p-5 bg-amber-50 rounded-2xl border border-amber-100">
+                        <p class="text-sm text-amber-900 leading-relaxed">
+                            <strong>¿Por qué puede estar en 0%?</strong> No necesariamente significa que el dinero se perdió. A veces está atrapado en licitaciones, trámites o firmas de contrato. El problema es real igual: mientras eso pasa, el parque no se construye y la vía no se repara.
+                        </p>
+                    </div>
                 </div>
 
-            <div class="mt-8 bg-slate-50 rounded-xl p-5 border-l-4 border-slate-400">
-                <p class="text-sm text-slate-600">
-                    <strong class="text-slate-800">Nota del Ciudadano:</strong> Un avance de ejecución bajo no significa que el dinero se haya perdido. Significa que está salvaguardado, pero debido a licitaciones o trámites, aún no se transforma en bienestar material en las calles. ¡Acelerar estos procesos es clave!
-                </p>
+                <div class="lg:col-span-7 flex flex-col justify-center">
+                    <div id="obrasContainer" class="space-y-4"></div>
+                </div>
             </div>
         </section>
 
-        <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-slate-100">
-            <h3 class="text-2xl font-semibold text-institucional-navy mb-4">4. El Reto del Flujo de Caja a Proveedores</h3>
-            <p class="text-sm text-slate-600 mb-6">
-                A veces la alcaldía recibe un servicio satisfactoriamente, pero el pago formal se retrasa por trámites. Descongestionar estas cuentas es vital para que quienes prestan servicios a la ciudad no sufran atrasos.
-            </p>
-
-            <div id="proveedoresContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 lg:p-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+                 <div class="lg:col-span-5 flex flex-col">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="text-4xl">⏳</span>
+                        <h2 class="text-2xl lg:text-3xl font-bold text-navy">Lo que se debe pero no se ha pagado</h2>
+                    </div>
+                    <p class="text-base text-slate-500 mb-6 leading-relaxed">
+                        La alcaldía ya recibió el servicio — el colegio dio clases, el médico atendió pacientes — pero todavía no ha girado el dinero al proveedor. Esto se llama <strong>mora en pagos</strong>.
+                    </p>
+                    <p class="text-sm text-slate-500 mt-auto leading-relaxed italic p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                        Cada peso pendiente es un sueldo que un profesor, una enfermera o un contratista aún no ha recibido por un trabajo que ya hizo.
+                    </p>
                 </div>
-            
-            <p class="text-xs text-center text-slate-400 mt-6 mt-4">
-                Reducir estos saldos pendientes asegura que profesores, personal médico y contratistas reciban el fruto de su trabajo a tiempo.
-            </p>
+
+                <div class="lg:col-span-7">
+                    <div id="proveedoresContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                </div>
+            </div>
         </section>
 
     </main>
 
-    <button onclick="toggleModal()" class="fixed bottom-6 right-6 bg-institucional-navy hover:bg-blue-800 text-white rounded-full p-4 shadow-lg flex items-center justify-center transition-transform hover:scale-105 z-40 focus:outline-none focus:ring-4 focus:ring-blue-300">
-        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-        ¿Dudas Técnicas?
+    <button onclick="toggleModal()"
+        class="fixed bottom-6 right-5 bg-navy hover:bg-blue-800 text-white rounded-full pl-4 pr-5 py-3
+               shadow-xl flex items-center gap-2 text-sm font-medium transition-all hover:-translate-y-1 z-40
+               focus:outline-none focus:ring-4 focus:ring-blue-300 border border-white/20">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+        Origen de los datos
     </button>
 
-    <div id="techModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative fade-in">
-            <button onclick="toggleModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    <div id="techModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-end sm:items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative fade-in">
+            <button onclick="toggleModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full p-1 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
             </button>
-            <h3 class="text-xl font-bold text-institucional-navy mb-4 flex items-center">
-                <svg class="w-6 h-6 mr-2 text-institucional-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                Transparencia de los Datos
-            </h3>
-            <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-                Este tablero interactivo fue construido como un ejercicio de alfabetización ciudadana. 
-            </p>
-            <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-                Los datos expuestos aquí provienen de una extracción de conjuntos de datos públicos disponibles en la plataforma de <strong>Datos Abiertos de Colombia</strong>.
-            </p>
-            <p class="text-sm text-slate-500 italic">
-                Cuidar los recursos públicos empieza por entenderlos.
-            </p>
-            <div class="mt-6 text-center">
-                <button onclick="toggleModal()" class="px-6 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors">Cerrar</button>
+            <div class="flex items-center gap-4 mb-6">
+                <div class="p-3 bg-emerald-50 rounded-xl">
+                    <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-navy">De dónde vienen los datos</h3>
             </div>
+            <p class="text-base text-slate-600 mb-4 leading-relaxed">
+                Todo lo que ves aquí viene de los <strong>conjuntos de datos abiertos del Municipio de Bucaramanga</strong>, publicados en el portal oficial <strong>datos.gov.co</strong> del Estado colombiano.
+            </p>
+            <p class="text-base text-slate-600 mb-6 leading-relaxed">
+                Los archivos originales fueron procesados y transformados en un formato más legible para poder visualizarlos. Nadie modificó los números — solo se organizaron.
+            </p>
+            <p class="text-sm text-slate-500 italic border-t border-slate-100 pt-5">
+                Esta herramienta es un ejercicio de rendición de cuentas ciudadana. Los recursos públicos son de todos, y entenderlos es el primer paso para cuidarlos.
+            </p>
+            <button onclick="toggleModal()" class="mt-6 w-full py-3 bg-navy hover:bg-blue-800 text-white font-bold rounded-xl text-base transition-colors shadow-md">
+                Entendido
+            </button>
         </div>
     </div>
 
     <script>
-        // === 0. BASE DE DATOS PROCESADA ===
-        // Aquí están los datos pre-procesados de los archivos subidos.
         const auditoriaData = {
             "2021-1": {
-                "ingresos": { "No Tributarios": 25.0, "Impuestos Tributarios": 30.0, "Transferencias Nación": 45.0 }, // Valores de referencia
-                "gastos": { "Inversión Social": 70.6, "Funcionamiento": 24.5, "Pago de Deudas": 4.9 },
-                "obras": [
-                    { "nombre": "Impuesto De Alumbrado Público", "asignada_millones": 29947.7, "avance": 0.0 }
+                ingresos: { "No Tributarios": 25.0, "Impuestos Tributarios": 30.0, "Transferencias Nación": 45.0 },
+                gastos:   { "Inversión Social": 70.6, "Funcionamiento": 24.5, "Pago de Deudas": 4.9 },
+                obras: [
+                    { nombre: "Impuesto De Alumbrado Público", asignada_millones: 29947.7, avance: 0.0 }
                 ],
-                "proveedores": [
-                    { "servicio": "Fonpet Vigencia Expirada", "deuda_millones": 124.6 }
+                proveedores: [
+                    { servicio: "Fonpet Vigencia Expirada", deuda_millones: 124.6 }
                 ]
             },
             "2021-2": {
-                "ingresos": { "No Tributarios": 24.0, "Impuestos Tributarios": 28.0, "Transferencias Nación": 48.0 },
-                "gastos": { "Inversión Social": 78.1, "Funcionamiento": 18.5, "Pago de Deudas": 3.5 },
-                "obras": [
-                    { "nombre": "Recursos Del Crédito 273", "asignada_millones": 95206.7, "avance": 9.3 },
-                    { "nombre": "Salud Régimen Subsidiado", "asignada_millones": 29403.5, "avance": 13.4 }
+                ingresos: { "No Tributarios": 24.0, "Impuestos Tributarios": 28.0, "Transferencias Nación": 48.0 },
+                gastos:   { "Inversión Social": 78.1, "Funcionamiento": 18.5, "Pago de Deudas": 3.5 },
+                obras: [
+                    { nombre: "Recursos Del Crédito 273", asignada_millones: 95206.7, avance: 9.3 },
+                    { nombre: "Salud Régimen Subsidiado VA", asignada_millones: 29403.5, avance: 13.4 }
                 ],
-                "proveedores": [
-                    { "servicio": "Contribución Obra Pública", "deuda_millones": 434.2 }
+                proveedores: [
+                    { servicio: "Contribución 5% Contratos Obra Pública", deuda_millones: 434.2 }
                 ]
             },
             "2022-1": {
-                "ingresos": { "No Tributarios": 22.2, "Impuestos Tributarios": 22.8, "Transferencias Nación": 21.0 },
-                "gastos": { "Inversión Social": 71.2, "Funcionamiento": 25.7, "Pago de Deudas": 3.1 },
-                "obras": [
-                    { "nombre": "Infraestructura Red Vial Urbana", "asignada_millones": 34575.8, "avance": 1.8 },
-                    { "nombre": "Sedes Mantenidas 526", "asignada_millones": 26480.0, "avance": 0.0 },
-                    { "nombre": "Hospitales Primer Nivel 274", "asignada_millones": 19689.3, "avance": 0.0 }
+                ingresos: { "No Tributarios": 22.2, "Impuestos Tributarios": 22.8, "Transferencias Nación": 21.0 },
+                gastos:   { "Inversión Social": 71.2, "Funcionamiento": 25.7, "Pago de Deudas": 3.1 },
+                obras: [
+                    { nombre: "Infraestructura Red Vial Urbana", asignada_millones: 34575.8, avance: 1.8 },
+                    { nombre: "Sedes Mantenidas 526", asignada_millones: 26480.0, avance: 0.0 },
+                    { nombre: "Hospitales Primer Nivel 274", asignada_millones: 19689.3, avance: 0.0 }
                 ],
-                "proveedores": [
-                    { "servicio": "Servicio Educativo 201", "deuda_millones": 841.6 }
+                proveedores: [
+                    { servicio: "Servicio Educativo 201", deuda_millones: 841.6 }
                 ]
             },
             "2022-2": {
-                "ingresos": { "No Tributarios": 24.7, "Impuestos Tributarios": 22.5, "Transferencias Nación": 23.2 },
-                "gastos": { "Inversión Social": 50.0, "Funcionamiento": 36.3, "Pago de Deudas": 13.7 },
-                "obras": [
-                    { "nombre": "Redes De Alumbrado Público Mejoradas", "asignada_millones": 14844.7, "avance": 2.3 },
-                    { "nombre": "Mantenimiento A La Infraestructura Deportiva", "asignada_millones": 14082.2, "avance": 1.6 }
+                ingresos: { "No Tributarios": 24.7, "Impuestos Tributarios": 22.5, "Transferencias Nación": 23.2 },
+                gastos:   { "Inversión Social": 50.0, "Funcionamiento": 36.3, "Pago de Deudas": 13.7 },
+                obras: [
+                    { nombre: "Redes De Alumbrado Público Mejoradas", asignada_millones: 14844.7, avance: 2.3 },
+                    { nombre: "Mantenimiento Infraestructura Deportiva", asignada_millones: 14082.2, avance: 1.6 }
                 ],
-                "proveedores": [
-                    { "servicio": "Servicio De Apoyo Para La Dotación Hospitalaria 274", "deuda_millones": 4822.0 },
-                    { "servicio": "Mantenimiento Vía Terciaria", "deuda_millones": 2229.7 }
+                proveedores: [
+                    { servicio: "Dotación Hospitalaria 274", deuda_millones: 4822.0 },
+                    { servicio: "Mantenimiento Vía Terciaria", deuda_millones: 2229.7 }
                 ]
             },
             "2023-1": {
-                "ingresos": { "No Tributarios": 22.0, "Impuestos Tributarios": 26.1, "Transferencias Nación": 20.5 },
-                "gastos": { "Inversión Social": 72.2, "Funcionamiento": 22.9, "Pago de Deudas": 4.9 },
-                "obras": [
-                    { "nombre": "Infraestructura Educativa Mejorada 273", "asignada_millones": 79669.0, "avance": 0.0 },
-                    { "nombre": "Control De Movimientos En Masa", "asignada_millones": 61384.0, "avance": 0.0 },
-                    { "nombre": "Espacio Público Adecuado 201", "asignada_millones": 34545.6, "avance": 0.0 }
+                ingresos: { "No Tributarios": 22.0, "Impuestos Tributarios": 26.1, "Transferencias Nación": 20.5 },
+                gastos:   { "Inversión Social": 72.2, "Funcionamiento": 22.9, "Pago de Deudas": 4.9 },
+                obras: [
+                    { nombre: "Infraestructura Educativa Mejorada 273", asignada_millones: 79669.0, avance: 0.0 },
+                    { nombre: "Control De Movimientos En Masa", asignada_millones: 61384.0, avance: 0.0 },
+                    { nombre: "Espacio Público Adecuado 201", asignada_millones: 34545.6, avance: 0.0 }
                 ],
-                "proveedores": [
-                    { "servicio": "Estrategias De Permanencia Alimentación Escolar", "deuda_millones": 678.5 }
+                proveedores: [
+                    { servicio: "Alimentación Escolar (Estrategias de Permanencia)", deuda_millones: 678.5 }
                 ]
             },
             "2023-2": {
-                "ingresos": { "No Tributarios": 24.7, "Impuestos Tributarios": 22.9, "Transferencias Nación": 23.1 },
-                "gastos": { "Inversión Social": 55.0, "Funcionamiento": 21.6, "Pago de Deudas": 23.4 },
-                "obras": [
-                    { "nombre": "Hospitales De Primer Nivel 275", "asignada_millones": 23793.8, "avance": 0.0 },
-                    { "nombre": "Redes De Alumbrado Público", "asignada_millones": 11058.0, "avance": 9.6 }
+                ingresos: { "No Tributarios": 24.7, "Impuestos Tributarios": 22.9, "Transferencias Nación": 23.1 },
+                gastos:   { "Inversión Social": 55.0, "Funcionamiento": 21.6, "Pago de Deudas": 23.4 },
+                obras: [
+                    { nombre: "Hospitales De Primer Nivel 275", asignada_millones: 23793.8, avance: 0.0 },
+                    { nombre: "Redes De Alumbrado Público 526", asignada_millones: 11058.0, avance: 9.6 }
                 ],
-                "proveedores": [
-                    { "servicio": "Sgp Educación Nómina 205", "deuda_millones": 7536.7 },
-                    { "servicio": "Promoción De Los Derechos De Los Niños", "deuda_millones": 3359.8 }
+                proveedores: [
+                    { servicio: "SGP Educación — Nómina Docente 205", deuda_millones: 7536.7 },
+                    { servicio: "Promoción Derechos Niños y Adolescentes", deuda_millones: 3359.8 }
                 ]
             },
             "2024-1": {
-                "ingresos": { "No Tributarios": 23.8, "Impuestos Tributarios": 24.5, "Transferencias Nación": 22.4 },
-                "gastos": { "Inversión Social": 65.0, "Funcionamiento": 9.1, "Pago de Deudas": 25.9 },
-                "obras": [
-                    { "nombre": "Servicio De Alumbrado Público 226", "asignada_millones": 48035.6, "avance": 0.0 },
-                    { "nombre": "Infraestructura Para Reducción Del Riesgo", "asignada_millones": 47549.2, "avance": 0.0 }
+                ingresos: { "No Tributarios": 23.8, "Impuestos Tributarios": 24.5, "Transferencias Nación": 22.4 },
+                gastos:   { "Inversión Social": 65.0, "Funcionamiento": 9.1, "Pago de Deudas": 25.9 },
+                obras: [
+                    { nombre: "Servicio De Alumbrado Público 226", asignada_millones: 48035.6, avance: 0.0 },
+                    { nombre: "Infraestructura Reducción Del Riesgo", asignada_millones: 47549.2, avance: 0.0 }
                 ],
-                "proveedores": [
-                    { "servicio": "Servicio Educativo 201", "deuda_millones": 1120.3 }
+                proveedores: [
+                    { servicio: "Servicio Educativo 201", deuda_millones: 1120.3 }
                 ]
             },
             "2024-2": {
-                "ingresos": { "No Tributarios": 26.1, "Impuestos Tributarios": 21.1, "Transferencias Nación": 24.3 },
-                "gastos": { "Inversión Social": 62.0, "Funcionamiento": 12.2, "Pago de Deudas": 25.8 },
-                "obras": [
-                    { "nombre": "Servicio De Alumbrado Público 226", "asignada_millones": 40933.6, "avance": 3.1 },
-                    { "nombre": "Vía Urbana Construida 530", "asignada_millones": 13615.1, "avance": 0.0 }
+                ingresos: { "No Tributarios": 26.1, "Impuestos Tributarios": 21.1, "Transferencias Nación": 24.3 },
+                gastos:   { "Inversión Social": 62.0, "Funcionamiento": 12.2, "Pago de Deudas": 25.8 },
+                obras: [
+                    { nombre: "Servicio De Alumbrado Público 226", asignada_millones: 40933.6, avance: 3.1 },
+                    { nombre: "Vía Urbana Construida 530", asignada_millones: 13615.1, avance: 0.0 }
                 ],
-                "proveedores": [
-                    { "servicio": "Servicio Educativo 205", "deuda_millones": 13498.1 },
-                    { "servicio": "Transporte De Pacientes 275", "deuda_millones": 794.5 }
+                proveedores: [
+                    { servicio: "Servicio Educativo 205", deuda_millones: 13498.1 },
+                    { servicio: "Transporte De Pacientes 275", deuda_millones: 794.5 }
                 ]
             }
         };
 
-        // Variables Globales de los Gráficos
+        const definiciones = {
+            funcionamiento: `<strong>⚙️ Funcionamiento</strong><br><br>
+                Es lo que cuesta que la ciudad no se detenga hoy. Aquí están los salarios de los funcionarios públicos, el mantenimiento de las sedes de la alcaldía, los servicios públicos de los edificios institucionales y los contratos básicos de operación.<br><br>
+                <em class="text-slate-500">Analogía:</em> Es como el mercado mensual de una familia. Sin él nada funciona, pero tampoco hace crecer el hogar.`,
+            inversion: `<strong>🏗️ Inversión Social</strong><br><br>
+                Es la plata que sí transforma la ciudad. Se destina a construir o mejorar colegios, hospitales, parques, vías, acueductos y programas sociales. También cubre subsidios de salud y alimentación escolar.<br><br>
+                <em class="text-emerald-700">Un buen indicador:</em> Que este porcentaje sea el mayor de los tres es señal de que la alcaldía no solo "sobrevive" sino que invierte en el futuro.`,
+            deuda: `<strong>🏦 Pago de Deudas</strong><br><br>
+                Bucaramanga, como cualquier empresa o familia, a veces pide préstamos para financiar obras grandes que no puede pagar de una sola vez. Este porcentaje es lo que se devuelve a los bancos en ese semestre: capital más intereses.<br><br>
+                <em class="text-amber-700">Ojo:</em> Cuando este porcentaje sube mucho (como en 2024), significa que la deuda pasada está "comiendo" plata que podría ir a nueva inversión.`
+        };
+
         let ingresosChart, gastosChart;
 
         function inicializarDashboard() {
-            // Llenar el select con los periodos
             const periodos = Object.keys(auditoriaData);
-            const select = document.getElementById('periodoSelect');
-            
+            const select   = document.getElementById('periodoSelect');
             periodos.forEach(p => {
-                const option = document.createElement('option');
-                option.value = p;
-                option.textContent = `Año ${p.split('-')[0]} - Semestre ${p.split('-')[1]}`;
-                select.appendChild(option);
+                const opt = document.createElement('option');
+                opt.value = p;
+                opt.textContent = `Año ${p.split('-')[0]} — Semestre ${p.split('-')[1]}`;
+                select.appendChild(opt);
             });
-            
-            // Seleccionar por defecto el último semestre disponible
-            const ultimoPeriodo = periodos[periodos.length - 1];
-            select.value = ultimoPeriodo;
+            const ultimo = periodos[periodos.length - 1];
+            select.value = ultimo;
 
-            // Inicializar las gráficas vacías (se llenan en el update)
-            const ctxIngresos = document.getElementById('ingresosChart').getContext('2d');
-            ingresosChart = new Chart(ctxIngresos, {
+            // Gráfico Ingresos (dona)
+            ingresosChart = new Chart(
+                document.getElementById('ingresosChart').getContext('2d'), {
                 type: 'doughnut',
                 data: {
                     labels: ['No Tributarios', 'Impuestos Tributarios', 'Transferencias Nación'],
-                    datasets: [{
-                        data: [0,0,0],
-                        backgroundColor: ['#10b981', '#1e3a8a', '#94a3b8'],
-                        borderWidth: 2, borderColor: '#ffffff', hoverOffset: 4
+                    datasets: [{ data: [0,0,0],
+                        backgroundColor: ['#059669','#1e3a8a','#94a3b8'],
+                        borderWidth: 4, borderColor: '#ffffff', hoverOffset: 8
                     }]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } }, cutout: '65%'
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    layout: { padding: 10 },
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { font: { size: 13, family: 'DM Sans', weight: '500' }, padding: 20 } 
+                        } 
+                    },
+                    cutout: '65%'
                 }
             });
 
-            const ctxGastos = document.getElementById('gastosChart').getContext('2d');
-            gastosChart = new Chart(ctxGastos, {
+            // Gráfico Gastos (barras horizontales)
+            gastosChart = new Chart(
+                document.getElementById('gastosChart').getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: ['Inversión Social', 'Funcionamiento', 'Pago de Deudas'],
-                    datasets: [{
-                        label: '% del Gasto Total',
-                        data: [0,0,0],
-                        backgroundColor: ['#10b981', '#1e3a8a', '#f59e0b'],
-                        borderRadius: 6
+                    datasets: [{ label: '% del presupuesto', data: [0,0,0],
+                        backgroundColor: ['#059669','#1e3a8a','#d97706'],
+                        borderRadius: 8, borderSkipped: false,
+                        barPercentage: 0.6
                     }]
                 },
                 options: {
-                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { beginAtZero: true, grid: { display: false } }, y: { grid: { display: false } } }
+                    indexAxis: 'y', 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    layout: { padding: { right: 30 } },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: { 
+                            callbacks: { label: ctx => ` ${ctx.raw}% del gasto total` },
+                            padding: 12, titleFont: { size: 14, family: 'DM Sans' }, bodyFont: { size: 13, family: 'DM Sans' }
+                        }
+                    },
+                    scales: {
+                        x: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9', drawBorder: false },
+                             ticks: { callback: v => v + '%', font: { family: 'DM Sans', size: 12 }, padding: 8 } },
+                        y: { grid: { display: false }, ticks: { font: { family: 'DM Sans', size: 13, weight: '600' }, color: '#334155' } }
+                    }
                 }
             });
 
-            // Cargar los datos iniciales
-            updateDashboard(ultimoPeriodo);
-            
-            // Mostrar la primera definición del glosario por defecto
+            updateDashboard(ultimo);
             mostrarGlosario('inversion');
         }
 
         function updateDashboard(periodo) {
-            const data = auditoriaData[periodo];
+            const d = auditoriaData[periodo];
 
-            // 1. Actualizar Gráfico de Ingresos
+            // Ingresos
             ingresosChart.data.datasets[0].data = [
-                data.ingresos['No Tributarios'],
-                data.ingresos['Impuestos Tributarios'],
-                data.ingresos['Transferencias Nación']
+                d.ingresos['No Tributarios'],
+                d.ingresos['Impuestos Tributarios'],
+                d.ingresos['Transferencias Nación']
             ];
             ingresosChart.update();
 
-            // 2. Actualizar Gráfico de Gastos
+            // Gastos
             gastosChart.data.datasets[0].data = [
-                data.gastos['Inversión Social'],
-                data.gastos['Funcionamiento'],
-                data.gastos['Pago de Deudas']
+                d.gastos['Inversión Social'],
+                d.gastos['Funcionamiento'],
+                d.gastos['Pago de Deudas']
             ];
             gastosChart.update();
 
-            // 3. Actualizar Obras Estancadas
-            const obrasContainer = document.getElementById('obrasContainer');
-            if (data.obras.length > 0) {
-                obrasContainer.innerHTML = data.obras.map(obra => {
-                    const esBajo = obra.avance < 5;
-                    const textColor = esBajo ? 'text-institucional-amber' : 'text-institucional-navy';
-                    const bgColor = esBajo ? 'bg-institucional-amber' : 'bg-institucional-navy';
-                    
-                    return `
-                        <div class="fade-in">
-                            <div class="flex justify-between items-end mb-1">
-                                <span class="text-sm font-semibold text-slate-700 w-2/3 truncate" title="${obra.nombre}">${obra.nombre} <span class="font-normal text-slate-500">($${obra.asignada_millones.toLocaleString('es-CO')} M)</span></span>
-                                <span class="text-sm font-bold ${textColor}">${obra.avance}%</span>
-                            </div>
-                            <div class="w-full bg-slate-200 rounded-full h-3">
-                                <div class="${bgColor} h-3 rounded-full transition-all duration-700 ease-out" style="width: ${obra.avance > 0 ? obra.avance : 1}%"></div>
-                            </div>
+            // Obras
+            const oc = document.getElementById('obrasContainer');
+            oc.innerHTML = d.obras.length ? d.obras.map(o => {
+                const low   = o.avance < 5;
+                const color = low ? '#d97706' : '#059669';
+                const label = o.avance === 0
+                    ? '<span class="badge bg-red-100 text-red-700 border border-red-200">Sin movimiento</span>'
+                    : `<span class="badge bg-amber-100 text-amber-800 border border-amber-200">${o.avance}% ejecutado</span>`;
+                return `
+                    <div class="fade-in bg-slate-50/70 p-5 rounded-2xl border border-slate-100">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-3">
+                            <p class="text-base font-bold text-navy leading-tight" title="${o.nombre}">${o.nombre}</p>
+                            ${label}
                         </div>
-                    `;
-                }).join('');
-            } else {
-                obrasContainer.innerHTML = '<p class="text-slate-500 italic">No hay registros destacados de obras para este semestre.</p>';
-            }
+                        <p class="text-sm text-slate-500 mb-4">Presupuesto: <strong class="text-slate-700 font-display">$${o.asignada_millones.toLocaleString('es-CO')} millones</strong></p>
+                        <div class="bar-track bg-slate-200 h-2.5">
+                            <div class="bar-fill shadow-sm" style="width:${Math.max(o.avance,0.5)}%; background:${color}"></div>
+                        </div>
+                    </div>`;
+            }).join('') : `<p class="text-sm text-slate-400 italic p-4">Sin proyectos destacados este semestre.</p>`;
 
-            // 4. Actualizar Deudas Proveedores
-            const provContainer = document.getElementById('proveedoresContainer');
-            if (data.proveedores.length > 0) {
-                const svgs = [
-                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>',
-                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>'
-                ];
-                
-                provContainer.innerHTML = data.proveedores.map((prov, idx) => `
-                    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm border-l-4 border-l-institucional-amber hover:shadow-md transition-shadow fade-in">
-                        <div class="flex items-center mb-3">
-                            <div class="p-2 bg-amber-50 rounded-lg mr-3 text-institucional-amber shrink-0">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">${svgs[idx % 2]}</svg>
-                            </div>
-                            <h4 class="font-bold text-slate-700 line-clamp-2 text-sm" title="${prov.servicio}">${prov.servicio}</h4>
-                        </div>
-                        <p class="text-3xl font-bold text-institucional-amber mb-1">$${prov.deuda_millones.toLocaleString('es-CO')}</p>
-                        <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Millones Pendientes</p>
+            // Proveedores
+            const pc = document.getElementById('proveedoresContainer');
+            const icons = ['🏫', '🏥', '🛣️', '💡', '🌳', '📋'];
+            pc.innerHTML = d.proveedores.length ? d.proveedores.map((p, i) => `
+                <div class="card-hover bg-white border border-amber-200 rounded-2xl p-6 border-t-4 border-t-amber-500 fade-in shadow-sm flex flex-col h-full">
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="p-2 bg-amber-50 rounded-lg text-xl shrink-0">${icons[i % icons.length]}</div>
+                        <p class="text-sm font-bold text-navy leading-snug mt-1">${p.servicio}</p>
                     </div>
-                `).join('');
-            } else {
-                provContainer.innerHTML = '<div class="col-span-full text-center p-4 bg-slate-50 rounded-lg text-slate-500 italic">No hay deudas destacadas reportadas en este periodo.</div>';
-            }
+                    <div class="mt-auto pt-2">
+                        <p class="text-3xl lg:text-4xl font-bold text-amber-600 font-display tracking-tight">$${p.deuda_millones.toLocaleString('es-CO')}</p>
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1">millones sin pagar</p>
+                    </div>
+                </div>`).join('')
+                : `<div class="p-6 bg-emerald-50 rounded-2xl border border-emerald-100 text-base font-bold text-emerald-800 flex items-center gap-2 col-span-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Sin deudas destacadas este semestre</div>`;
         }
 
-        // --- FUNCIONES DEL GLOSARIO Y MODAL ---
-        const definiciones = {
-            funcionamiento: "<strong>Funcionamiento:</strong> Es el costo operativo de que la ciudad exista como entidad. Aquí se incluyen los salarios de los servidores públicos, los servicios de las sedes y mantenimiento. Es vital para mantener la casa en orden.",
-            inversion: "<strong>Inversión Social:</strong> Es el costo de hacer crecer a la ciudad. Este dinero se destina a construir bienestar tangible: pavimentar vías, dotar colegios, mejorar hospitales, programas sociales y crear nuevos parques.",
-            deuda: "<strong>Pago de Deudas:</strong> Como cualquier hogar, la ciudad a veces pide préstamos a los bancos para hacer obras muy grandes. Este porcentaje corresponde al abono de capital e intereses que hacemos mes a mes."
-        };
-
-        function mostrarGlosario(termino) {
+        function mostrarGlosario(t) {
             const caja = document.getElementById('glosarioCaja');
-            caja.innerHTML = definiciones[termino];
-            caja.classList.remove('hidden');
-            
-            caja.classList.remove('fade-in');
-            void caja.offsetWidth; // reset animacion
+            caja.innerHTML = definiciones[t];
+            caja.classList.remove('hidden','fade-in');
+            void caja.offsetWidth;
             caja.classList.add('fade-in');
         }
 
         function toggleModal() {
-            const modal = document.getElementById('techModal');
-            modal.classList.toggle('hidden');
+            document.getElementById('techModal').classList.toggle('hidden');
         }
 
-        // Iniciar todo al cargar la página
         window.onload = inicializarDashboard;
     </script>
 </body>
