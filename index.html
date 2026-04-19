@@ -12,10 +12,10 @@
                 extend: {
                     colors: {
                         institucional: {
-                            navy: '#1e3a8a',    /* Azul Marino */
-                            emerald: '#10b981', /* Verde Esmeralda */
-                            amber: '#f59e0b',   /* Naranja/Ámbar de Alerta */
-                            light: '#f8fafc'    /* Slate 50 */
+                            navy: '#1e3a8a',
+                            emerald: '#10b981',
+                            amber: '#f59e0b',
+                            light: '#f8fafc'
                         }
                     }
                 }
@@ -26,284 +26,311 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* Transiciones suaves para la interactividad */
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
+            from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        /* Ocultar scrollbar en la navegación móvil pero permitir scroll */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased relative pb-20">
 
-    <header class="bg-institucional-navy text-white py-12 px-6 shadow-md rounded-b-3xl mb-10">
+    <header class="bg-institucional-navy text-white py-10 px-6 shadow-md">
         <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-3xl md:text-5xl font-bold mb-4 tracking-tight">El Camino de tu Peso</h1>
-            <h2 class="text-xl md:text-2xl font-light text-blue-200">Entendiendo el Presupuesto de Bucaramanga</h2>
-            <p class="mt-6 text-sm md:text-base text-blue-100 max-w-2xl mx-auto leading-relaxed">
-                Un viaje interactivo basado en datos abiertos para entender de dónde viene el dinero de nuestra ciudad y en qué se transforma. Aquí aprenderemos juntos cómo funciona nuestra casa común.
+            <h1 class="text-3xl md:text-5xl font-bold mb-3 tracking-tight">El Camino de tu Peso</h1>
+            <h2 class="text-xl md:text-2xl font-light text-blue-200">Alfabetización Presupuestal de Bucaramanga</h2>
+            <p class="mt-4 text-sm md:text-base text-blue-100 max-w-2xl mx-auto leading-relaxed">
+                Un viaje interactivo basado en datos abiertos. Selecciona un período temporal para entender cómo evoluciona la salud financiera de nuestra ciudad.
             </p>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 space-y-12">
-
-        <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-slate-100">
-            <h3 class="text-2xl font-semibold text-institucional-navy mb-6">1. ¿De dónde viene la plata?</h3>
+    <div class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm py-3 px-4 mb-8">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            <span class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Viaje en el tiempo:</span>
             
+            <div class="flex overflow-x-auto w-full md:w-auto no-scrollbar space-x-2 pb-1 md:pb-0" id="time-selector">
+                </div>
+        </div>
+    </div>
+
+    <main class="max-w-6xl mx-auto px-4 space-y-12">
+        <div class="text-center mb-8 fade-in" id="period-indicator">
+            <h3 class="text-2xl md:text-3xl font-bold text-institucional-navy">
+                Viendo datos de: <span id="current-period-text" class="text-institucional-emerald">...</span>
+            </h3>
+        </div>
+
+        <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-slate-100 fade-in">
+            <h3 class="text-xl font-semibold text-institucional-navy mb-6">1. ¿De dónde viene la plata en este semestre?</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                 <div class="relative h-64 w-full flex justify-center">
                     <canvas id="ingresosChart"></canvas>
                 </div>
-                
                 <div class="bg-slate-50 rounded-xl p-6 border-l-4 border-institucional-emerald">
                     <h4 class="font-bold text-institucional-emerald flex items-center mb-2">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         Nota del Ciudadano
                     </h4>
                     <p class="text-sm text-slate-600 mb-3">
-                        Los <strong>Impuestos Tributarios</strong> (como el Predial) y los <strong>No Tributarios</strong> (multas, tasas) son el esfuerzo directo de los bumangueses. 
-                    </p>
-                    <p class="text-sm text-slate-600">
-                        Las <strong>Transferencias de la Nación</strong> son dineros que gira el gobierno central desde Bogotá. Depender mucho de estas transferencias es un reto, ya que reduce la autonomía financiera de la ciudad para tomar sus propias decisiones estratégicas.
+                        Observa cómo cambia la porción gris (Transferencias de la Nación). Si esta porción crece mucho respecto a los impuestos locales, la ciudad pierde autonomía frente a Bogotá.
                     </p>
                 </div>
             </div>
         </section>
 
-        <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-slate-100">
-            <h3 class="text-2xl font-semibold text-institucional-navy mb-6">2. ¿En qué gastamos para que la ciudad funcione?</h3>
-            
+        <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-slate-100 fade-in">
+            <h3 class="text-xl font-semibold text-institucional-navy mb-6">2. ¿En qué invertimos para funcionar?</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                 <div class="h-64 w-full">
                     <canvas id="gastosChart"></canvas>
                 </div>
-
                 <div class="flex flex-col space-y-4">
-                    <p class="text-sm text-slate-500 mb-2">Haz clic en un concepto para entender qué significa:</p>
-                    
+                    <p class="text-sm text-slate-500 mb-2">Haz clic para entender los conceptos:</p>
                     <div class="flex flex-wrap gap-2 mb-4">
-                        <button onclick="mostrarGlosario('funcionamiento')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-institucional-navy font-medium rounded-lg transition-colors focus:ring-2 focus:ring-institucional-navy">Funcionamiento</button>
-                        <button onclick="mostrarGlosario('inversion')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-institucional-emerald font-medium rounded-lg transition-colors focus:ring-2 focus:ring-institucional-emerald">Inversión Social</button>
-                        <button onclick="mostrarGlosario('deuda')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded-lg transition-colors focus:ring-2 focus:ring-slate-400">Pago de Deudas</button>
+                        <button onclick="mostrarGlosario('funcionamiento')" class="px-3 py-1.5 text-sm bg-slate-100 hover:bg-slate-200 text-institucional-navy font-medium rounded-lg transition-colors">Funcionamiento</button>
+                        <button onclick="mostrarGlosario('inversion')" class="px-3 py-1.5 text-sm bg-slate-100 hover:bg-slate-200 text-institucional-emerald font-medium rounded-lg transition-colors">Inversión Social</button>
+                        <button onclick="mostrarGlosario('deuda')" class="px-3 py-1.5 text-sm bg-slate-100 hover:bg-slate-200 text-amber-600 font-medium rounded-lg transition-colors">Pago de Deudas</button>
                     </div>
-
-                    <div id="glosarioCaja" class="hidden bg-blue-50 p-5 rounded-xl border border-blue-100 text-sm text-slate-700 min-h-[100px] fade-in">
-                        </div>
+                    <div id="glosarioCaja" class="hidden bg-blue-50 p-4 rounded-xl border border-blue-100 text-sm text-slate-700 min-h-[90px]"></div>
                 </div>
             </div>
         </section>
 
-        <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-slate-100">
-            <h3 class="text-2xl font-semibold text-institucional-navy mb-6">3. Inversión en Proceso</h3>
+        <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-slate-100 fade-in">
+            <h3 class="text-xl font-semibold text-institucional-navy mb-4">3. Inversión en Proceso</h3>
+            <p class="text-sm text-slate-600 mb-6">Proyectos clave con avance administrativo lento en este período. El dinero está asignado, pero el flujo hacia la calle tiene retos operativos.</p>
             
-            <p class="text-sm text-slate-600 mb-6">
-                El dinero asignado a una obra o servicio no siempre se gasta inmediatamente. A veces, los tiempos administrativos hacen que la ejecución presupuestal tome pausas. Veamos el avance real de algunos proyectos importantes.
-            </p>
-
-            <div class="space-y-6">
-                <div>
-                    <div class="flex justify-between items-end mb-1">
-                        <span class="text-sm font-semibold text-slate-700">Servicio Educativo 205 <span class="font-normal text-slate-500">($67.621 Millones)</span></span>
-                        <span class="text-sm font-bold text-institucional-navy">9.6%</span>
-                    </div>
-                    <div class="w-full bg-slate-200 rounded-full h-3">
-                        <div class="bg-institucional-navy h-3 rounded-full" style="width: 9.6%"></div>
-                    </div>
+            <div id="obras-container" class="space-y-6">
                 </div>
-
-                <div>
-                    <div class="flex justify-between items-end mb-1">
-                        <span class="text-sm font-semibold text-slate-700">Espacio Público Adecuado <span class="font-normal text-slate-500">($80.069 Millones)</span></span>
-                        <span class="text-sm font-bold text-institucional-navy">14.9%</span>
-                    </div>
-                    <div class="w-full bg-slate-200 rounded-full h-3">
-                        <div class="bg-institucional-navy h-3 rounded-full" style="width: 14.9%"></div>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="flex justify-between items-end mb-1">
-                        <span class="text-sm font-semibold text-slate-700">Prevención de Movimientos en Masa <span class="font-normal text-slate-500">($27.463 Millones)</span></span>
-                        <span class="text-sm font-bold text-institucional-amber">1.5%</span>
-                    </div>
-                    <div class="w-full bg-slate-200 rounded-full h-3">
-                        <div class="bg-institucional-amber h-3 rounded-full" style="width: 1.5%"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-8 bg-slate-50 rounded-xl p-5 border-l-4 border-slate-400">
-                <p class="text-sm text-slate-600">
-                    <strong class="text-slate-800">Nota del Ciudadano:</strong> Un avance de ejecución bajo no significa que el dinero se haya perdido. Significa que el dinero existe y está salvaguardado, pero debido a tiempos de licitaciones, estructuración de proyectos o requisitos legales, aún no ha podido transformarse en bienestar material en las calles. ¡Acelerar estos procesos es clave!
-                </p>
-            </div>
         </section>
 
-        <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-slate-100">
-            <h3 class="text-2xl font-semibold text-institucional-navy mb-4">4. El Reto del Flujo de Caja a Proveedores</h3>
-            <p class="text-sm text-slate-600 mb-6">
-                A veces la alcaldía contrata un servicio y lo recibe satisfactoriamente, pero el pago formal se retrasa en la tesorería por trámites administrativos. Descongestionar estas cuentas es vital para que quienes prestan servicios a la ciudad no sufran atrasos.
-            </p>
+        <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border border-slate-100 fade-in">
+            <h3 class="text-xl font-semibold text-institucional-navy mb-4">4. Cuentas por Pagar a Proveedores</h3>
+            <p class="text-sm text-slate-600 mb-6">Saldos facturados y pendientes de pago al cierre de este semestre. Bajar estos números es vital para el bienestar de contratistas y educadores.</p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm border-l-4 border-l-institucional-amber hover:shadow-md transition-shadow">
-                    <div class="flex items-center mb-3">
-                        <div class="p-2 bg-amber-50 rounded-lg mr-3 text-institucional-amber">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                        </div>
-                        <h4 class="font-bold text-slate-700">Servicio Educativo 205</h4>
-                    </div>
-                    <p class="text-3xl font-bold text-institucional-amber mb-1">$15.181</p>
-                    <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Millones Pendientes de Pago Real</p>
+            <div id="deuda-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 </div>
-
-                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm border-l-4 border-l-institucional-amber hover:shadow-md transition-shadow">
-                    <div class="flex items-center mb-3">
-                        <div class="p-2 bg-amber-50 rounded-lg mr-3 text-institucional-amber">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-                        </div>
-                        <h4 class="font-bold text-slate-700">Dotación Hospitalaria 274</h4>
-                    </div>
-                    <p class="text-3xl font-bold text-institucional-amber mb-1">$4.822</p>
-                    <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Millones Pendientes de Pago Real</p>
-                </div>
-            </div>
-            
-            <p class="text-xs text-center text-slate-400 mt-6 mt-4">
-                Reducir estos saldos pendientes asegura que nuestros profesores, personal médico y contratistas reciban el fruto de su trabajo a tiempo.
-            </p>
         </section>
 
     </main>
 
-    <button onclick="toggleModal()" class="fixed bottom-6 right-6 bg-institucional-navy hover:bg-blue-800 text-white rounded-full p-4 shadow-lg flex items-center justify-center transition-transform hover:scale-105 z-40 focus:outline-none focus:ring-4 focus:ring-blue-300">
-        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-        ¿Dudas Técnicas?
-    </button>
-
-    <div id="techModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative fade-in">
-            <button onclick="toggleModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            <h3 class="text-xl font-bold text-institucional-navy mb-4 flex items-center">
-                <svg class="w-6 h-6 mr-2 text-institucional-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                Transparencia de los Datos
-            </h3>
-            <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-                Este tablero interactivo fue construido como un ejercicio de alfabetización ciudadana. 
-            </p>
-            <p class="text-sm text-slate-600 mb-4 leading-relaxed">
-                Los datos expuestos aquí provienen de un análisis automatizado y riguroso realizado con <strong>Python (Polars)</strong> sobre conjuntos de datos públicos disponibles en el <strong>SECOP</strong> y la plataforma de <strong>Datos Abiertos de Colombia</strong>.
-            </p>
-            <p class="text-sm text-slate-500 italic">
-                Cuidar los recursos públicos empieza por entenderlos.
-            </p>
-            <div class="mt-6 text-center">
-                <button onclick="toggleModal()" class="px-6 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // --- 1. CONFIGURACIÓN GRÁFICO DE DONA (INGRESOS) ---
-        const ctxIngresos = document.getElementById('ingresosChart').getContext('2d');
-        new Chart(ctxIngresos, {
-            type: 'doughnut',
-            data: {
-                labels: ['No Tributarios', 'Impuestos Tributarios', 'Transferencias Nación'],
-                datasets: [{
-                    data: [38.9, 37.3, 23.8],
-                    backgroundColor: [
-                        '#10b981', /* Esmeralda para esfuerzo propio / no tributario */
-                        '#1e3a8a', /* Navy para tributarios */
-                        '#94a3b8'  /* Slate para transferencias */
-                    ],
-                    borderWidth: 2,
-                    borderColor: '#ffffff',
-                    hoverOffset: 4
-                }]
+        // Esta es la estructura que reemplaza a los CSVs para la web. 
+        // Agrupé los datos por "Periodo" basándome en tu información.
+        const baseDeDatos = {
+            "2023-06": {
+                label: "Año 2023 - Primer Semestre",
+                ingresos: [39.79, 36.80, 24.47], // No Tributarios, Tributarios, Transferencias
+                gastos: [65.0, 28.0, 7.0],       // Inversión, Funcionamiento, Deuda
+                obras: [
+                    { nombre: "Servicio de Alumbrado Público 226", ppto: "76.958", avance: 1.66 },
+                    { nombre: "Obras Reducción Riesgo Desastres 201", ppto: "65.406", avance: 13.73 },
+                    { nombre: "Espacio Público Adecuado 201", ppto: "80.069", avance: 14.90 }
+                ],
+                deuda: [
+                    { nombre: "Servicio Educativo 205", monto: "15.181" },
+                    { nombre: "Dotación Hospitalaria 274", monto: "4.822" }
+                ]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { padding: 20, font: { family: "'Inter', sans-serif" } }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return ' ' + context.label + ': ' + context.raw + '%';
-                            }
-                        }
-                    }
-                },
-                cutout: '65%'
+            "2023-12": {
+                label: "Año 2023 - Segundo Semestre",
+                ingresos: [35.50, 38.20, 26.30],
+                gastos: [68.0, 25.0, 7.0],
+                obras: [
+                    { nombre: "Prevención Movimientos Masa 800", ppto: "61.383", avance: 0.0 },
+                    { nombre: "Vía Urbana Construida 530", ppto: "45.979", avance: 0.0 },
+                    { nombre: "Salud Régimen Subsidiado 274", ppto: "58.807", avance: 7.86 }
+                ],
+                deuda: [
+                    { nombre: "Servicio Educativo 201", monto: "3.274" },
+                    { nombre: "Espacio Público Adecuado 201", monto: "2.891" }
+                ]
+            },
+            "2024-06": {
+                label: "Año 2024 - Primer Semestre",
+                ingresos: [38.91, 37.37, 22.78],
+                gastos: [71.23, 18.46, 4.92],
+                obras: [
+                    { nombre: "Estaciones Bomberos Construidas 503", ppto: "7.893", avance: 0.0 },
+                    { nombre: "Servicio Asistencia Técnica 201", ppto: "13.765", avance: 12.1 },
+                    { nombre: "Espacio Público Adecuado 389", ppto: "11.172", avance: 4.72 }
+                ],
+                deuda: [
+                    { nombre: "Aporte Sobretasa Bomberil", monto: "2.242" },
+                    { nombre: "Atención Seguridad Policía 201", monto: "1.102" }
+                ]
+            },
+            "2024-12": {
+                label: "Año 2024 - Segundo Semestre",
+                ingresos: [42.10, 39.50, 18.40],
+                gastos: [78.07, 18.46, 3.47],
+                obras: [
+                    { nombre: "Adecuación Hidráulica 501", ppto: "29.997", avance: 9.3 },
+                    { nombre: "Servicio Promoción Salud 275", ppto: "11.973", avance: 0.0 },
+                    { nombre: "Vía Terciaria Mantenimiento 213", ppto: "0.516", avance: 69.7 }
+                ],
+                deuda: [
+                    { nombre: "A Entidades del Gobierno", monto: "2.256" },
+                    { nombre: "Servicio Asistencia Técnica 201", monto: "0.176" }
+                ]
             }
-        });
+        };
 
-        // --- 2. CONFIGURACIÓN GRÁFICO DE BARRAS (GASTOS) ---
-        const ctxGastos = document.getElementById('gastosChart').getContext('2d');
-        new Chart(ctxGastos, {
-            type: 'bar',
-            data: {
-                labels: ['Inversión Social', 'Funcionamiento', 'Pago de Deudas'],
-                datasets: [{
-                    label: 'Distribución Histórica (%)',
-                    data: [32.4, 24.8, 8.4],
-                    backgroundColor: [
-                        '#10b981', /* Inversión = Positivo/Crecer */
-                        '#1e3a8a', /* Funcionamiento = Base/Navy */
-                        '#f59e0b'  /* Deuda = Reto/Amber */
-                    ],
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                indexAxis: 'y', /* Barras horizontales */
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) { return ' Representa el ' + context.raw + '%'; }
-                        }
-                    }
-                },
-                scales: {
-                    x: { beginAtZero: true, max: 40, grid: { display: false } },
-                    y: { grid: { display: false } }
+        // --- LÓGICA DE INTERACTIVIDAD ---
+        let ingresosChartInstance = null;
+        let gastosChartInstance = null;
+        let periodoActual = "2024-12"; // Período por defecto al cargar
+
+        // 1. Inicializar la interfaz
+        function initApp() {
+            crearBotonesNavegacion();
+            cargarDatosSemestre(periodoActual);
+        }
+
+        // 2. Crear botones de navegación dinámicamente
+        function crearBotonesNavegacion() {
+            const selector = document.getElementById('time-selector');
+            Object.keys(baseDeDatos).forEach(periodo => {
+                const btn = document.createElement('button');
+                btn.id = `btn-${periodo}`;
+                // Estilo base
+                btn.className = "flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 border bg-white text-slate-600 border-slate-200 hover:border-institucional-navy hover:text-institucional-navy";
+                btn.innerText = periodo;
+                btn.onclick = () => cargarDatosSemestre(periodo);
+                selector.appendChild(btn);
+            });
+        }
+
+        // 3. Función principal para cambiar de semestre
+        function cargarDatosSemestre(periodo) {
+            periodoActual = periodo;
+            const datos = baseDeDatos[periodo];
+
+            // Actualizar UI del indicador de tiempo
+            document.getElementById('current-period-text').innerText = datos.label;
+            
+            // Actualizar estilos de los botones
+            Object.keys(baseDeDatos).forEach(p => {
+                const b = document.getElementById(`btn-${p}`);
+                if (p === periodo) {
+                    b.classList.add('bg-institucional-navy', 'text-white', 'border-institucional-navy', 'shadow-md');
+                    b.classList.remove('bg-white', 'text-slate-600', 'border-slate-200');
+                } else {
+                    b.classList.remove('bg-institucional-navy', 'text-white', 'border-institucional-navy', 'shadow-md');
+                    b.classList.add('bg-white', 'text-slate-600', 'border-slate-200');
                 }
-            }
-        });
+            });
 
-        // --- 3. LÓGICA DEL GLOSARIO INTERACTIVO ---
+            // Actualizar Gráficos
+            renderIngresosChart(datos.ingresos);
+            renderGastosChart(datos.gastos);
+
+            // Actualizar DOM Obras y Deudas
+            renderObras(datos.obras);
+            renderDeuda(datos.deuda);
+        }
+
+        // --- RENDERIZADORES ---
+
+        function renderIngresosChart(datosIngresos) {
+            const ctx = document.getElementById('ingresosChart').getContext('2d');
+            if (ingresosChartInstance) ingresosChartInstance.destroy(); // Destruir anterior para evitar solapamientos
+            
+            ingresosChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['No Tributarios (Tasas/Multas)', 'Impuestos (Predial/ICA)', 'Transferencias Bogotá'],
+                    datasets: [{
+                        data: datosIngresos,
+                        backgroundColor: ['#10b981', '#1e3a8a', '#94a3b8'],
+                        borderWidth: 2, borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }, cutout: '65%'
+                }
+            });
+        }
+
+        function renderGastosChart(datosGastos) {
+            const ctx = document.getElementById('gastosChart').getContext('2d');
+            if (gastosChartInstance) gastosChartInstance.destroy();
+            
+            gastosChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Inversión Social', 'Funcionamiento', 'Deuda'],
+                    datasets: [{
+                        label: '% del Gasto Total',
+                        data: datosGastos,
+                        backgroundColor: ['#10b981', '#1e3a8a', '#f59e0b'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true, max: 100 }, y: { grid: { display: false } } }
+                }
+            });
+        }
+
+        function renderObras(obras) {
+            const container = document.getElementById('obras-container');
+            container.innerHTML = ''; // Limpiar
+            
+            obras.forEach(obra => {
+                const colorCls = obra.avance < 5 ? 'bg-institucional-amber' : 'bg-institucional-navy';
+                const textCls = obra.avance < 5 ? 'text-institucional-amber' : 'text-institucional-navy';
+                
+                container.innerHTML += `
+                <div class="fade-in">
+                    <div class="flex flex-col md:flex-row md:justify-between items-start md:items-end mb-1">
+                        <span class="text-sm font-semibold text-slate-700 w-full md:w-3/4">${obra.nombre} <br><span class="font-normal text-slate-500 text-xs">Presupuesto: $${obra.ppto} Millones</span></span>
+                        <span class="text-sm font-bold ${textCls} mt-2 md:mt-0">${obra.avance}% Real</span>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-3">
+                        <div class="${colorCls} h-3 rounded-full transition-all duration-1000 ease-out" style="width: ${Math.max(obra.avance, 1)}%"></div>
+                    </div>
+                </div>`;
+            });
+        }
+
+        function renderDeuda(deudas) {
+            const container = document.getElementById('deuda-container');
+            container.innerHTML = '';
+            
+            deudas.forEach(deuda => {
+                container.innerHTML += `
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm border-l-4 border-l-institucional-amber fade-in">
+                    <h4 class="font-bold text-slate-700 text-sm mb-2">${deuda.nombre}</h4>
+                    <p class="text-3xl font-bold text-institucional-amber mb-1">$${deuda.monto}</p>
+                    <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Millones Pendientes</p>
+                </div>`;
+            });
+        }
+
+        // Glosario
         const definiciones = {
-            funcionamiento: "<strong>Funcionamiento:</strong> Es el costo operativo de que la ciudad exista como entidad. Aquí se incluyen los salarios de los servidores públicos, los servicios públicos de las sedes de la alcaldía, y papelería. Es vital para mantener la casa en orden.",
-            inversion: "<strong>Inversión Social:</strong> Es el costo de hacer crecer a la ciudad. Este dinero se destina a construir bienestar tangible: pavimentar vías, dotar colegios, mejorar hospitales, programas sociales y crear nuevos parques.",
-            deuda: "<strong>Pago de Deudas:</strong> Como cualquier hogar, la ciudad a veces pide préstamos a los bancos para hacer obras muy grandes. Este porcentaje corresponde al abono de capital e intereses que hacemos mes a mes por esos créditos pasados."
+            funcionamiento: "<strong>Funcionamiento:</strong> Salarios, papelería, recibos de luz. El costo de que la alcaldía opere.",
+            inversion: "<strong>Inversión Social:</strong> Obras públicas, dotación de colegios, programas de salud.",
+            deuda: "<strong>Pago de Deudas:</strong> Abono de capital e intereses a los bancos por préstamos pasados."
         };
 
         function mostrarGlosario(termino) {
             const caja = document.getElementById('glosarioCaja');
             caja.innerHTML = definiciones[termino];
             caja.classList.remove('hidden');
-            
-            // Reiniciar animación
-            caja.classList.remove('fade-in');
-            void caja.offsetWidth; // trigger reflow
-            caja.classList.add('fade-in');
         }
 
-        // --- 4. LÓGICA DEL MODAL ---
-        function toggleModal() {
-            const modal = document.getElementById('techModal');
-            modal.classList.toggle('hidden');
-        }
+        // Arrancar la app cuando cargue la página
+        window.onload = initApp;
+
     </script>
 </body>
 </html>
